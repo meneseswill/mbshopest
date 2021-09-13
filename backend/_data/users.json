@@ -1,0 +1,17 @@
+[
+    {
+      "_id": "6041a8da4e0425528d2454ed",
+      "name": "Joshua Bonilla",
+      "email": "joshua@gmail.com",
+      "password": "123456",
+      "role": "publisher"
+    },
+    {
+      "_id": "6041a8da4e0425528d24541a",
+      "name": "Ashley López",
+      "email": "ashley@gmail.com",
+      "password": "123456",
+      "role": "publisher"
+    }
+  ]
+  
