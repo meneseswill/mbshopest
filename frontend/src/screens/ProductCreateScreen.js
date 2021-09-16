@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { Container, Row, Col, Form, Button, Image } from 'react-bootstrap'
-import { createProduct, listProductDetails } from '../actions/productActions'
+import { createProduct } from '../actions/productActions'
 import Loader from '../components/Loader'
 import Message from '../components/Message'
 import { PRODUCT_CREATE_RESET } from '../Constants/productConstants'
@@ -21,12 +21,23 @@ const ProductEditScreen = ({ history }) => {
   const productCreate = useSelector((state) => state.productCreate)
   const { loading, success, error } = productCreate
 
+  const userLogin = useSelector((state) => state.userLogin)
+  const { userInfo } = userLogin
+
   useEffect(() => {
+    if (
+      !userInfo ||
+      (userInfo.role !== 'admin' && userInfo.role !== 'publisher')
+    ) {
+      console.log('entra')
+      history.push('/login')
+    }
+
     if (success) {
       dispatch({ type: PRODUCT_CREATE_RESET })
       history.push('/admin/productlist')
     }
-  }, [success])
+  }, [success, history, dispatch, userInfo])
 
   const submitHandler = (e) => {
     e.preventDefault()

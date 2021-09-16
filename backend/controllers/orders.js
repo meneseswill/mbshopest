@@ -76,3 +76,35 @@ exports.getMyOrders = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({ success: true, data: orders })
 })
+
+// @desc    Obtener órdenes del usuario actual
+// @route   GET /api/v1/orders/myorders
+// @access  Private/Admin
+exports.getOrders = asyncHandler(async (req, res, next) => {
+  const orders = await Order.find({}).populate('user', 'id name')
+
+  res.status(200).json({ success: true, data: orders })
+})
+
+// @desc    Actualizar la orden a entregada
+// @route   PUT /api/v1/orders/:id/deliver
+// @access  Private/Admin
+exports.updateOrderToDelivered = asyncHandler(async (req, res, next) => {
+  const order = await Order.findById(req.params.id)
+
+  if (!order) {
+    return next(
+      new ErrorResponse(
+        `No se encontró el recurso con el id: ${req.params.id}`,
+        404
+      )
+    )
+  } else {
+    order.isDelivered = true
+    order.deliveredAt = Date.now()
+  }
+
+  const updateOrder = await order.save()
+
+  res.status(200).json({ success: true, data: updateOrder })
+})

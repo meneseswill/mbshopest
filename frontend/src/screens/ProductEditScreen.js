@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { Container, Row, Col, Form, Button, Image } from 'react-bootstrap'
@@ -21,7 +20,6 @@ const ProductEditScreen = ({ match, history }) => {
   const [category, setCategory] = useState('')
   const [countInStock, setCountInStock] = useState(0)
   const [description, setDescription] = useState('')
-  const [uploading, setUploading] = useState(false)
 
   const dispatch = useDispatch()
 
@@ -35,7 +33,14 @@ const ProductEditScreen = ({ match, history }) => {
     error: errorUpdate,
   } = productUpdate
 
+  const userLogin = useSelector((state) => state.userLogin)
+  const { userInfo } = userLogin
+
   useEffect(() => {
+    if (!userInfo || userInfo.role !== 'admin') {
+      history.push('/login')
+    }
+
     if (successUpdate) {
       dispatch({ type: PRODUCT_UPDATE_RESET })
       dispatch({ type: PRODUCT_DETAILS_RESET })
@@ -53,7 +58,7 @@ const ProductEditScreen = ({ match, history }) => {
         setDescription(product.description)
       }
     }
-  }, [dispatch, productId, product._id, history, successUpdate])
+  }, [dispatch, productId, product, history, successUpdate, userInfo])
 
   const submitHandler = (e) => {
     e.preventDefault()

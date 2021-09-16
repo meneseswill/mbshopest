@@ -4,6 +4,7 @@ import { Col, Container, Row, Form, Button } from 'react-bootstrap'
 import { login } from '../actions/userActions'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
+import { Link } from 'react-router-dom'
 
 const LoginScreen = ({ location, history }) => {
   const [email, setEmail] = useState('')
@@ -14,7 +15,7 @@ const LoginScreen = ({ location, history }) => {
   const userLogin = useSelector((state) => state.userLogin)
   const { loading, error, userInfo } = userLogin
 
-  const redirect = location.search ? location.search.split('=')[1] : '/'
+  const redirect = location.search ? location.search.split('=')[1] : ''
 
   useEffect(() => {
     if (userInfo) {
@@ -60,6 +61,16 @@ const LoginScreen = ({ location, history }) => {
               Ingresar
             </Button>
           </Form>
+          <Row className='py-3'>
+            <Col>
+              ¿Eres un nuevo cliente?{' '}
+              <Link
+                to={redirect ? `/register?redirect=${redirect}` : '/register'}
+              >
+                Registrar
+              </Link>
+            </Col>
+          </Row>
         </Col>
       </Row>
     </Container>

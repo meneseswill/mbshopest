@@ -59,6 +59,13 @@ const Header = () => {
                   </LinkContainer>
                 </NavDropdown>
               )}
+              {userInfo && userInfo.role === 'publisher' && (
+                <NavDropdown title='Administración' id='admin'>
+                  <LinkContainer to='/admin/productlist'>
+                    <NavDropdown.Item>Productos</NavDropdown.Item>
+                  </LinkContainer>
+                </NavDropdown>
+              )}
             </Nav>
           </Navbar.Collapse>
         </Container>

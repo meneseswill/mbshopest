@@ -29,6 +29,9 @@ import {
   USER_UPDATE_REQUEST,
   USER_UPDATE_SUCCESS,
   USER_UPDATE_FAIL,
+  USER_REGISTER_REQUEST,
+  USER_REGISTER_SUCCESS,
+  USER_REGISTER_FAIL,
 } from '../Constants/userConstants'
 
 export const login = (email, password) => async (dispatch) => {
@@ -103,6 +106,66 @@ export const logout = () => async (dispatch) => {
   dispatch({
     type: USER_LIST_RESET,
   })
+
+  document.location.href = '/login'
+}
+
+export const register = (name, email, password) => async (dispatch) => {
+  try {
+    dispatch({
+      type: USER_REGISTER_REQUEST,
+    })
+
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+
+    const { data } = await axios.post(
+      '/api/v1/auth/register',
+      { name, email, password },
+      config
+    )
+
+    const configWithAuthorization = {
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    }
+
+    const { data: me } = await axios.get(
+      '/api/v1/auth/me',
+      configWithAuthorization
+    )
+
+    const userInfo = {
+      token: data.token,
+      name: me.data.name,
+      email: me.data.email,
+      role: me.data.role,
+    }
+
+    dispatch({
+      type: USER_REGISTER_SUCCESS,
+      payload: userInfo,
+    })
+
+    dispatch({
+      type: USER_LOGIN_SUCCESS,
+      payload: userInfo,
+    })
+
+    localStorage.setItem('userInfo', JSON.stringify(data))
+  } catch (error) {
+    dispatch({
+      type: USER_REGISTER_FAIL,
+      payload:
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+    })
+  }
 }
 
 export const getUserDetails = (path) => async (dispatch, getState) => {
@@ -195,66 +258,64 @@ export const updateUserProfile = (user) => async (dispatch, getState) => {
   }
 }
 
-export const updateUserPassword = (currentPassword, newPassword) => async (
-  dispatch,
-  getState
-) => {
-  try {
-    dispatch({
-      type: USER_UPDATE_PASSWORD_REQUEST,
-    })
+export const updateUserPassword =
+  (currentPassword, newPassword) => async (dispatch, getState) => {
+    try {
+      dispatch({
+        type: USER_UPDATE_PASSWORD_REQUEST,
+      })
 
-    const {
-      userLogin: { userInfo },
-    } = getState()
+      const {
+        userLogin: { userInfo },
+      } = getState()
 
-    const config = {
-      headers: {
-        'Content-type': 'application/json',
-        Authorization: `Bearer ${userInfo.token}`,
-      },
+      const config = {
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      }
+
+      const { data: accessToken } = await axios.put(
+        '/api/v1/auth/updatepassword',
+        { currentPassword, newPassword },
+        config
+      )
+
+      const { data: me } = await axios.get('/api/v1/auth/me', {
+        headers: {
+          Authorization: `Bearer ${accessToken.token}`,
+        },
+      })
+
+      const userDetails = {
+        token: accessToken.token,
+        name: me.data.name,
+        email: me.data.email,
+        role: me.data.role,
+      }
+
+      dispatch({
+        type: USER_UPDATE_PASSWORD_SUCCESS,
+        payload: userDetails,
+      })
+
+      dispatch({
+        type: USER_LOGIN_SUCCESS,
+        payload: userDetails,
+      })
+
+      localStorage.setItem('userInfo', JSON.stringify(userDetails))
+    } catch (error) {
+      dispatch({
+        type: USER_UPDATE_PASSWORD_FAIL,
+        payload:
+          error.response && error.response.data
+            ? error.response.data.error
+            : error.message,
+      })
     }
-
-    const { data: accessToken } = await axios.put(
-      '/api/v1/auth/updatepassword',
-      { currentPassword, newPassword },
-      config
-    )
-
-    const { data: me } = await axios.get('/api/v1/auth/me', {
-      headers: {
-        Authorization: `Bearer ${accessToken.token}`,
-      },
-    })
-
-    const userDetails = {
-      token: accessToken.token,
-      name: me.data.name,
-      email: me.data.email,
-      role: me.data.role,
-    }
-
-    dispatch({
-      type: USER_UPDATE_PASSWORD_SUCCESS,
-      payload: userDetails,
-    })
-
-    dispatch({
-      type: USER_LOGIN_SUCCESS,
-      payload: userDetails,
-    })
-
-    localStorage.setItem('userInfo', JSON.stringify(userDetails))
-  } catch (error) {
-    dispatch({
-      type: USER_UPDATE_PASSWORD_FAIL,
-      payload:
-        error.response && error.response.data
-          ? error.response.data.error
-          : error.message,
-    })
   }
-}
 
 export const saveShippingAddress = (data) => async (dispatch) => {
   dispatch({
@@ -368,7 +429,7 @@ export const updateUser = (user) => async (dispatch, getState) => {
 
     dispatch({
       type: USER_DETAILS_SUCCESS,
-      payload: res.data
+      payload: res.data,
     })
   } catch (error) {
     dispatch({
